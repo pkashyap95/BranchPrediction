@@ -69,7 +69,7 @@ public class sim {
             System.out.printf("Error: Wrong branch predictor name:%s%n", params.bp_name);
             System.exit(0);
         }
-        bimodal_predictor test= new bimodal_predictor(params.M2);
+        main_predictor test= new main_predictor(params);
         //int counter=0;
         // Read file line by line
         try (BufferedReader br = new BufferedReader(new FileReader(trace_file)))
