@@ -136,7 +136,7 @@ public class hybrid_predictor {
         System.out.println(" number of mispredictions: "+ (int) number_of_mispredicts);
         String t=String.format("%.02f",((number_of_mispredicts/total_number_of_predicitions) *100));
         System.out.println(" misprediction rate: "+ t + "%");
-        System.out.println("FINAL BIMODAL CONTENTS");
+        System.out.println("FINAL CHOOSER CONTENTS");
         for(long i = 0; i <mSize; ++i){
             String binAddr= Long.toBinaryString(i);
             String prepend="";

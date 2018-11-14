@@ -37,7 +37,7 @@ public class main_predictor {
             mBimodalPredictor = new bimodal_predictor(param.M2);
         }
         else if(param.bp_name.equalsIgnoreCase("gshare")){
-            mGsharePredictor = new gshare_predictor(param.N, param.M1);
+            mGsharePredictor = new gshare_predictor(param.M1, param.N);
         }
         else if(param.bp_name.equalsIgnoreCase("hybrid")){
             mHybridPredictor=new hybrid_predictor(param.K, param.M1, param.N, param.M2);
@@ -65,4 +65,13 @@ public class main_predictor {
             mHybridPredictor.get_stats();
         }
     }
+    public void test_print(){
+        if(param.bp_name.equalsIgnoreCase("bimodal")){
+            mBimodalPredictor.test_prints();
+        }
+        else if(param.bp_name.equalsIgnoreCase("gshare")){
+            mGsharePredictor.test_print();
+        }
+    }
 }
+

@@ -117,7 +117,7 @@ public class gshare_predictor {
                 }
             }
         }
-        int int_addr= Integer.parseInt(addr, 2);
+        //int int_addr= Integer.parseInt(addr, 2);
         //System.out.println("global hist: "+ globalHistoryReg+ " "+(int)total_number_of_predicitions+" reqIndex is " + int_addr +" Prediciton was: "+ prediciton + " Updated prediciton: "+temp);
         update_global_history(outcome);
 
@@ -151,6 +151,105 @@ public class gshare_predictor {
             }        
             System.out.println(i+ " "+mPredictor.get(binAddr));
         }
-        System.out.println();
+        //System.out.println();
+    }
+    
+    ///////////////////////////////////////////////HYBRID PREDICTOR METHODS///////////////////////////
+    public int hybrid_predict(String address, char outcome){
+        String reqIndex = address.substring(address.length()-(int)mIndexBit-2,address.length()-2);
+        String toXOR    = reqIndex.substring(0,(int) mGlobalLength);
+        String remainder= reqIndex.substring((int)mGlobalLength);
+        int global_hist_XOR = Integer.parseInt(globalHistoryReg, 2);
+        int indexXOR        = Integer.parseInt(toXOR, 2);
+        int xor_result= indexXOR^global_hist_XOR;
+        String XOR_result_string = Integer.toBinaryString(xor_result);
+        
+        String prediction_table_index=XOR_result_string+remainder;
+        String prepend="";
+        if(prediction_table_index.length()<mIndexBit){
+            prepend= "0";
+            for(int x=1; x<mIndexBit-prediction_table_index.length();x++){
+                prepend+="0";
+            }
+            prediction_table_index=prepend+prediction_table_index;
+        }        
+        //System.out.print("full index: "+reqIndex +" toXOR: " + toXOR +" remainder addr: " +remainder +" final address: "+ prediction_table_index+ " ");
+        int predicited_value = (int) mPredictor.get(prediction_table_index);
+        int add= Integer.parseInt(prediction_table_index, 2);
+        //System.out.println("    GP:" + add + " " + predicited_value);
+        return predicited_value;
+    }
+    public void hybrid_update(String address, char outcome,int predicted_value){
+        String reqIndex = address.substring(address.length()-(int)mIndexBit-2,address.length()-2);
+        String toXOR    = reqIndex.substring(0,(int) mGlobalLength);
+        String remainder= reqIndex.substring((int)mGlobalLength);
+        int global_hist_XOR = Integer.parseInt(globalHistoryReg, 2);
+        int indexXOR        = Integer.parseInt(toXOR, 2);
+        int xor_result= indexXOR^global_hist_XOR;
+        String XOR_result_string = Integer.toBinaryString(xor_result);
+        
+        String prediction_table_index=XOR_result_string+remainder;
+        String prepend="";
+        if(prediction_table_index.length()<mIndexBit){
+            prepend= "0";
+            for(int x=1; x<mIndexBit-prediction_table_index.length();x++){
+                prepend+="0";
+            }
+            prediction_table_index=prepend+prediction_table_index;
+        }        
+        int temp=predicted_value;
+        if(predicted_value==2 || predicted_value==3){ //prediction is taken but it was not taken --> mispredict
+            if(outcome=='n'){
+                temp--;
+                mPredictor.put(prediction_table_index, temp);
+                number_of_mispredicts++;
+            }
+            else{
+                if(predicted_value==2){
+                    temp++;
+                    mPredictor.put(prediction_table_index, temp);
+                }
+            }
+        }
+        else if(predicted_value==0 || predicted_value==1){ //prediction is not taken but it was taken --> mispredict
+            if(outcome=='t'){
+                temp++;
+                mPredictor.put(prediction_table_index, temp);
+                number_of_mispredicts++;
+            }
+            else{
+                if(predicted_value == 1){
+                    temp--;
+                    mPredictor.put(prediction_table_index, temp);
+                }
+            }
+        }
+        int add= Integer.parseInt(prediction_table_index, 2);
+        //System.out.println("    GU:" + add + " " + temp);
+    }
+    public void hybrid_get_stats(){
+        System.out.println("FINAL GSHARE CONTENTS");
+        for(long i = 0; i <mSize; ++i){
+            String binAddr= Long.toBinaryString(i);
+            String prepend="";
+            if(binAddr.length()<mIndexBit){
+                prepend= "0";
+                for(int x=1; x<mIndexBit-binAddr.length();x++){
+                prepend+="0";
+                }
+                binAddr=prepend+binAddr;
+            }        
+            System.out.println(i+ " "+mPredictor.get(binAddr));
+        }
+    }
+    public double getMispredicts(){
+        return number_of_mispredicts;
+    }
+    
+    public void test_print(){
+        String t=String.format("%.02f",((number_of_mispredicts/total_number_of_predicitions) *100));
+        System.out.println(mIndexBit+", "+mGlobalLength+", "+(int)total_number_of_predicitions+", "+(int)number_of_mispredicts+", "+t);
     }
 }
+
+

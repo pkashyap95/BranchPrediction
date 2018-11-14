@@ -59,7 +59,6 @@ public class bimodal_predictor {
     }
     public void predict(String address, char outcome){
         String reqIndex = address.substring(address.length()-(int)mIndexBit-2,address.length()-2);
-        
         int predicited_value = (int) mPredictor.get(reqIndex);
         total_number_of_predicitions++;
         update_branch_prediciton(reqIndex, predicited_value, outcome);
@@ -93,7 +92,7 @@ public class bimodal_predictor {
                 }
             }
         }
-        int int_addr= Integer.parseInt(addr, 2);
+        //int int_addr= Integer.parseInt(addr, 2);
         //System.out.println((int)total_number_of_predicitions+" reqIndex is " + int_addr +" Prediciton was: "+prediciton + " Updated prediciton: "+temp);
     }
     public void get_stats(){
@@ -115,6 +114,69 @@ public class bimodal_predictor {
             }        
             System.out.println(i+ " "+mPredictor.get(binAddr));
         }
-        System.out.println();
+        //System.out.println();
+    }
+    /////////////////////////////////HYBRID//////////////////////////////////////////////////
+    public int hybrid_predict(String address, char outcome){
+        String reqIndex = address.substring(address.length()-(int)mIndexBit-2,address.length()-2);
+        int predicited_value = (int) mPredictor.get(reqIndex);
+        int add= Integer.parseInt(reqIndex, 2);
+        //System.out.println("    BP:" + add + " " + predicited_value);
+        return predicited_value;
+    }
+    public void hybrid_update(String address, char outcome, int predicted_val){
+        String reqIndex = address.substring(address.length()-(int)mIndexBit-2,address.length()-2);
+        int temp=predicted_val;
+        if(predicted_val==2 || predicted_val==3){ //prediction is taken but it was not taken --> mispredict
+            if(outcome=='n'){
+                temp--;
+                mPredictor.put(reqIndex, temp);
+                number_of_mispredicts++;
+            }
+            else{
+                if(predicted_val==2){
+                    temp++;
+                    mPredictor.put(reqIndex, temp);
+                }
+            }
+        }
+        else if(predicted_val==0 || predicted_val==1){ //prediction is not taken but it was taken --> mispredict
+            if(outcome=='t'){
+                temp++;
+                mPredictor.put(reqIndex, temp);
+                number_of_mispredicts++;
+            }
+            else{
+                if(predicted_val == 1){
+                    temp--;
+                    mPredictor.put(reqIndex, temp);
+                }
+            }
+        }
+        //int add= Integer.parseInt(reqIndex, 2);
+        //System.out.println("    BU:" + add + " " + temp);
+    }
+    public void hybrid_get_stats(){
+        System.out.println("FINAL BIMODAL CONTENTS");
+        for(long i = 0; i <mSize; ++i){
+            String binAddr= Long.toBinaryString(i);
+            String prepend="";
+            if(binAddr.length()<mIndexBit){
+                prepend= "0";
+                for(int x=1; x<mIndexBit-binAddr.length();x++){
+                prepend+="0";
+                }
+                binAddr=prepend+binAddr;
+            }        
+            System.out.println(i+ " "+mPredictor.get(binAddr));
+        }
+    }
+    public double getMispredicts(){
+        return number_of_mispredicts;
+    }
+    public void test_prints(){
+        String t=String.format("%.02f",((number_of_mispredicts/total_number_of_predicitions) *100));
+        System.out.println(mIndexBit+", "+(int)total_number_of_predicitions+", "+(int)number_of_mispredicts+", "+t);
     }
 }
+
